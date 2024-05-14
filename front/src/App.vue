@@ -13,9 +13,9 @@
 </template>
 
 <script setup>
-
 import { onMounted, ref } from 'vue';
-import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+
 const sentence = ref(null)
 const sen = ref("мама мыла раму")
 const inputVal = ref("")
@@ -25,12 +25,27 @@ const sentenceErrors = ref(0)
 let letterIndex = 0
 let notErrorKeys = new Set(["Alt", "Shift", "Control", "CapsLock", "Tab"])
 
+const client = new Client({
+    brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+    onConnect: () => {
+      console.log("sent?")
+      client.subscribe('/topic/greetings', message =>
+        console.log(`Received: ${message.body}`)
+      );
+      client.publish({ destination: '/app/hello', body: JSON.stringify(wordIndex.value) });
+    },
+});
+  
+client.activate()
+
 function handleKey(e){
   console.log(e)
+
   if(e.key == " " && inputVal.value == sen.value.split(" ")[wordIndex.value]){
     wordIndex.value += 1
     letterIndex = 0
     console.log("spacebar pressed")
+    client.publish({ destination: '/app/hello', body: JSON.stringify(wordIndex.value) });
     setTimeout(() => inputVal.value = "",0)
     inputVal.value = ""
     return
@@ -45,14 +60,7 @@ function handleKey(e){
 }
 
 onMounted(() =>{
-  try{
-    const sock = new SockJS("ws://localhost:8080/hello")
 
-  }catch(e){
-    console.log("suka blyad")
-  }
-  //sock.onopen = () => console.log("connected")
-  // socket.send("hello")
 })
 
 </script>
