@@ -10,7 +10,13 @@
     <input v-model="inputVal" @keydown="handleKey" type="text" />
   </div>
   <p>Errors: {{ sentenceErrors }}</p>
-  <p>players: {{ playersList }}</p>
+  <p>players:</p>
+  <ul v-if="player">
+    <li v-for="player in playersList" :key="player">
+      <span>{{ player.name }}</span>
+      <span> {{ player.wordIndex }}</span>
+    </li>
+  </ul>
 </template>
 
 <script setup>
@@ -19,6 +25,7 @@ import { Client } from "@stomp/stompjs";
 
 const sentence = ref(null);
 const sen = ref("мама мыла раму");
+const url = import.meta.env.VITE_URL
 const inputVal = ref("");
 const name = ref("");
 const wordIndex = ref(0);
@@ -32,7 +39,7 @@ let player = {
   wordIndex: wordIndex.value,
 };
 const client = new Client({
-  brokerURL: "ws://localhost:8080/gs-guide-websocket",
+  brokerURL: `ws://localhost:8080/gs-guide-websocket`,
   onConnect: () => {
     console.log("sent?");
     client.subscribe("/topic/greetings", (message) =>{
@@ -45,10 +52,16 @@ const client = new Client({
     });
   },
 });
+client.activate();
+
+async function createRoom(){
+  // await fetch("")
+}
+
 function join() {
+  fetch("http://localhost:8080/join-room")
   player.name = name.value
   console.log(name.value);
-  client.activate();
 }
 
 function handleKey(e) {
@@ -78,7 +91,9 @@ function handleKey(e) {
   }
 }
 
-onMounted(() => {});
+onMounted(() => {
+  console.log(`${url} ra`)
+});
 </script>
 
 <style scoped>
