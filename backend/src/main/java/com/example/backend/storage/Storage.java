@@ -8,11 +8,6 @@ public class Storage {
     public static final ArrayList<Room> rooms = new ArrayList<>();
 
     public static Room getRoomById(int roomId){
-        for(var room : rooms){
-            if(room.id() == roomId){
-                return room;
-            }
-        }
-        return null;
+        return rooms.stream().filter(room -> room.id() == roomId).findFirst().orElse(null);
     }
 }
