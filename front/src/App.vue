@@ -1,5 +1,6 @@
 <template>
   <div>
+    <button @click="createRoom">create room</button> <br/>
     <input type="text" v-model="name" />
     <button @click="join">join</button>
     <div class="sentence" ref="sentence">
@@ -25,10 +26,12 @@ import { Client } from "@stomp/stompjs";
 
 const sentence = ref(null);
 const sen = ref("мама мыла раму");
-const url = import.meta.env.VITE_URL
+const http = import.meta.env.VITE_URL
+const ws = import.meta.env.VITE_WS
 const inputVal = ref("");
 const name = ref("");
 const wordIndex = ref(0);
+let roomId;
 const sentenceErrors = ref(0);
 const playersList = ref({})
 let letterIndex = 0;
@@ -55,11 +58,42 @@ const client = new Client({
 client.activate();
 
 async function createRoom(){
-  // await fetch("")
+  const player = {
+    id:0,
+    name:name.value,
+    wordIndex:0,
+  }
+  await fetch(`http://localhost:8080/room-create`,{
+    method:"POST",
+    body:JSON.stringify(player)
+  })
+  .then((res) => {
+    console.log(res)
+    return res.json()
+  })
+  .then((data) => {
+    roomId = data.id
+    playersList.value = data
+    console.log(data)
+    joinWs()
+  })
 }
 
-function join() {
-  fetch("http://localhost:8080/join-room")
+function joinWs(){
+  const client = new Client({
+    brokerURL:`${ws}/rooms`,
+    onConnect: () => {
+      client.subscribe(`/topic/rooms/${roomId}`, (message) =>{
+        console.log(`: ${message.body}`)
+      })
+    }
+
+  })
+  client.activate()
+}
+
+function joinRoom() {
+  // fetch(`${ws}`)
   player.name = name.value
   console.log(name.value);
 }
@@ -92,7 +126,7 @@ function handleKey(e) {
 }
 
 onMounted(() => {
-  console.log(`${url} ra`)
+  console.log(`${http} ra`)
 });
 </script>
 
