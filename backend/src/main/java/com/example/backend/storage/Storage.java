@@ -7,7 +7,13 @@ import java.util.ArrayList;
 public class Storage {
     public static final ArrayList<Room> rooms = new ArrayList<>();
 
-    public static Room getRoomById(int roomId){
-        return rooms.stream().filter(room -> room.id() == roomId).findFirst().orElse(null);
+
+    public static Room getRoomById(String roomId){
+        for (Room room : rooms) {
+            if (room.id().equals(roomId)) {
+                return room;
+            }
+        }
+        return null;
     }
 }

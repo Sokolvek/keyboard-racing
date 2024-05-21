@@ -34,7 +34,11 @@ const inputVal = ref("");
 const name = ref("");
 const wordIndex = ref(0);
 const roomCode = ref("");
+let notErrorKeys = new Set(["Alt", "Shift", "Control", "CapsLock", "Tab", "Backspace"])
+let letterIndex = 0
+
 let roomId;
+let roomSocket;
 const sentenceErrors = ref(0);
 const room = ref({ players: [] });
 let id = 0;
@@ -70,11 +74,11 @@ async function createRoom() {
 
 function joinWs() {
   console.log(roomId);
-  const client = new Client({
+    roomSocket = new Client({
     brokerURL: `${ws}/rooms`,
     onConnect: () => {
       console.log(`Subscribed to /topic/rooms/${roomId}`);
-      client.subscribe(`/topic/rooms/${roomId}`, (message) => {
+      roomSocket.subscribe(`/topic/rooms/${roomId}`, (message) => {
         console.log(`Received message: ${message.body}`);
         room.value = JSON.parse(message.body);
       });
@@ -90,7 +94,7 @@ function joinWs() {
       console.error(`Additional details: ${frame.body}`);
     },
   });
-  client.activate();
+  roomSocket.activate();
 }
 
 function joinRoom() {
@@ -116,16 +120,41 @@ function joinRoom() {
   id += 1;
 }
 
-function handleKey(event) {
-  if (!notErrorKeys.has(event.key)) {
-    if (event.key === " ") {
-      if (inputVal.value.trim() === sen.value.split(' ')[wordIndex.value]) {
-        wordIndex.value++;
-        inputVal.value = "";
-      } else {
-        sentenceErrors.value++;
-      }
+function findPlayer(players){
+  let res
+  players.forEach((item,i) => {
+    console.log(item.name, name.value, typeof item.name, typeof name.value)
+    if(item.name === name.value){
+      res = i
     }
+  })
+  return res
+}
+
+function handleKey(e){
+  if(e.key == " " && inputVal.value == sen.value.split(" ")[wordIndex.value]){
+    let plrId = findPlayer(room.value.players)
+    room.value.players[plrId].wordIndex += 1
+    console.log(plrId, room.value.players)
+    wordIndex.value += 1
+    let request = {
+      id: 1,
+      players: room.value.players
+    };
+    letterIndex = 0
+    console.log(request)
+    // request.players[name.value].wordIndex += 1
+    roomSocket.publish({ destination: `/app/rooms/${roomId}`, body: JSON.stringify(request) });
+    setTimeout(() => inputVal.value = "",0)
+    inputVal.value = ""
+    return
+  }
+
+  if(e.key == sen.value.split(" ")[wordIndex.value][letterIndex]){
+    console.log("key matched")
+    letterIndex++
+  }else if(!notErrorKeys.has(e.key) && e.key != sen.value.split(" ")[wordIndex.value][letterIndex]){
+    sentenceErrors.value += 1
   }
 }
 
@@ -134,6 +163,6 @@ function handleKey(event) {
 <style>
 .current-word {
   font-weight: bold;
-  color: red;
+  color: green;
 }
 </style>
