@@ -1,26 +1,5 @@
 <template>
-  <div>
-    <button @click="showUsers">show users</button>
-    <input type="text" v-model="roomCode">
-    <button @click="joinRoom">join room</button><br/>
-    <button @click="createRoom">create room</button> <br/>
-    <input type="text" v-model="name" />
-    <button @click="join">join</button>
-    <div class="sentence" ref="sentence">
-      <div v-for="(word, i) in sen.split(' ')" :key="i">
-        <div :class="{ 'current-word': i == wordIndex }">{{ word }}</div>
-      </div>
-    </div>
-    <input v-model="inputVal" @keydown="handleKey" type="text" />
-  </div>
-  <p>Errors: {{ sentenceErrors }}</p>
-  <p>players:</p>
-  <ul v-if="room.players && room.players.length" class="room">
-    <li v-for="player in room.players" :key="player.id">
-      <p>{{ player.name }}</p>
-      <p>{{ player.wordIndex }}</p>
-    </li>
-  </ul>
+  <router-view></router-view>
 </template>
 
 <script setup>
@@ -123,7 +102,6 @@ function joinRoom() {
 function findPlayer(players){
   let res
   players.forEach((item,i) => {
-    console.log(item.name, name.value, typeof item.name, typeof name.value)
     if(item.name === name.value){
       res = i
     }
@@ -138,7 +116,7 @@ function handleKey(e){
     console.log(plrId, room.value.players)
     wordIndex.value += 1
     let request = {
-      id: 1,
+      id: roomId,
       players: room.value.players
     };
     letterIndex = 0

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 public class Storage {
     public static final ArrayList<Room> rooms = new ArrayList<>();
 
+    public static int roomId = 1;
+
 
     public static Room getRoomById(String roomId){
         for (Room room : rooms) {
