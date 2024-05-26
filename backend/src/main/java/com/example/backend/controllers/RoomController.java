@@ -55,19 +55,23 @@ public class RoomController {
         return room;
     }
 
-    @MessageMapping("/rooms/{roomId}")
-    @SendTo("topic/rooms/{roomId}")
-        public Room roomControl(@Payload Room room, @PathVariable String roomId) {
-        System.out.println("Received room update for roomId: " + room.id());
-        System.out.println("Room details: " + room.players().get(1).wordIndex);
+    @MessageMapping("rooms/{id}")
+        public Room roomControl(@Payload Room room) {
+        System.out.println("room socket " + " " + room.id());
         messagingTemplate.convertAndSend("/topic/rooms/" + room.id(), room);
         return room;
     }
 
-    @MessageMapping("/rooms")
+    class testReq{
+        String aba;
+    }
+
+    @MessageMapping("rooms")
     @SendTo("topic/rooms/all-rooms")
-    public void allRooms(){
+    public ArrayList<Room> allRooms(@Payload testReq test){
+        System.out.println("called " + test.aba);
         messagingTemplate.convertAndSend("/topic/rooms/all-rooms", Storage.rooms);
+        return Storage.rooms;
     }
 
 

@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 import BrowseRooms from "./pages/BrowseRooms.vue"
 import Main from "./pages/Main.vue"
+import RoomPage from "./pages/RoomPage.vue"
 const router = createRouter({
     history:createWebHashHistory(),
     routes:[
@@ -12,6 +13,10 @@ const router = createRouter({
         {
             path:"/rooms",
             component:BrowseRooms
+        },
+        {
+            path:"/room/:id",
+            component:RoomPage
         }
     ]
 })
