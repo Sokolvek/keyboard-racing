@@ -35,7 +35,7 @@ public class RoomController {
 
     @PostMapping("/room-create")
     public Room createRoom(@RequestBody Player player){
-        Room room = new Room(Integer.toString(Storage.roomId), new ArrayList<Player>(List.of(player)), 4);
+        Room room = new Room(Integer.toString(Storage.roomId), new ArrayList<Player>(List.of(player)), 4, false);
         Storage.rooms.add(room);
         Storage.roomId += 1;
         messagingTemplate.convertAndSend("/topic/rooms/all-rooms", Storage.rooms);
@@ -48,6 +48,9 @@ public class RoomController {
         Room room = Storage.getRoomById(id);
 
         assert room != null;
+        if(room.gameStarted()){
+            return null;
+        }
         room.add(player);
 
         log.info("Player {} joined room {}", player, id);
@@ -56,10 +59,16 @@ public class RoomController {
     }
 
     @MessageMapping("rooms/{id}")
-        public Room roomControl(@Payload Room room) {
-        System.out.println("room socket " + " " + room.id());
-        messagingTemplate.convertAndSend("/topic/rooms/" + room.id(), room);
-        return room;
+        public Room roomControl(@Payload RoomRequest roomReq) {
+        if (roomReq.action() == RoomStates.START){
+            var room = roomReq.room();
+            Room newRoom = new Room(room.id(), room.players(), room.limit(), true);
+            messagingTemplate.convertAndSend("/topic/rooms/" + roomReq.room().id(), newRoom);
+            return newRoom;
+        }
+        System.out.println("room socket " + " " + roomReq.room().id());
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomReq.room().id(), roomReq.room());
+        return roomReq.room();
     }
 
     class testReq{

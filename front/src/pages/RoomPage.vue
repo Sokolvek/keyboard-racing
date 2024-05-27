@@ -1,14 +1,17 @@
 <template>
   <div>
+    <button @click="startGame">startGame</button>
     <div class="sentence" ref="sentence">
       <div v-for="(word, i) in sen.split(' ')" :key="i">
         <div :class="{ 'current-word': i == wordIndex }">{{ word }}</div>
       </div>
     </div>
-    <input v-model="inputVal" @keydown="handleKey" type="text" />
+    
+    <input :disabled="!store.room.gameStarted" v-model="inputVal" @keydown="handleKey" type="text" />
     <p>Errors: {{ sentenceErrors }}</p>
     <p>Players:</p>
     <ul v-if="store.room && store.room" class="room">
+      <p>game status: {{ store.room.gameStarted }}</p>
       <li v-for="player in store.room.players" :key="player.id">
         <p>{{ player.name }}</p>
         <p>{{ player.wordIndex }}</p>
@@ -67,6 +70,19 @@ function joinWs() {
 
 function findPlayer(players) {
   return players.findIndex((item) => item.name === store.name);
+}
+
+function startGame(){
+  let req = {
+    action:"START",
+    room:{
+      id: roomId,
+      players: store.room.players,
+      limit: 4,
+      gameStarted: false
+    }
+  }
+  roomSocket.publish({destination:`/app/rooms/${roomId}`, body: JSON.stringify(req)})
 }
 
 function handleKey(e){
