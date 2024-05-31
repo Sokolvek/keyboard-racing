@@ -46,16 +46,19 @@ function joinWs() {
   roomSocket = new Client({
     brokerURL: `${ws}/rooms`,
     onConnect: () => {
-      console.log(`Subscribed to /topic/rooms/${roomId}`);
-      roomSocket.subscribe(`/topic/rooms/${roomId}`, (message) => {
+      console.log(`Subscribed to /topic/room/${roomId}`);
+      roomSocket.subscribe(`/topic/room/${roomId}`, (message) => {
         console.log(`Received message: ${message.body}`);
         store.room = JSON.parse(message.body);
       });
-
+      let req = {
+        action:"GET",
+        room:store.room
+      }
       // Request initial state of the room
       roomSocket.publish({
-        destination: `/app/rooms/${roomId}`,
-        body: JSON.stringify(store.room),
+        destination: `/app/room/${roomId}`,
+        body: JSON.stringify(req),
       });
 
       console.log("Connected to WebSocket");

@@ -23,17 +23,21 @@ const rooms = ref({});
 let roomsWS;
 
 function joinRoomsWS() {
+  let req = {
+    room:null,
+    action:"GET"
+  }
   roomsWS = new Client({
     brokerURL: `${ws}/rooms`,
     onConnect: () => {
       console.log('Connected to WebSocket');
-      roomsWS.subscribe(`/topic/rooms/all-rooms`, (message) => {
+      roomsWS.subscribe(`/topic/rooms`, (message) => {
         console.log('Received message:', message.body);
         rooms.value = JSON.parse(message.body);
       });
       roomsWS.publish({
         destination: `/app/rooms`,
-        body: JSON.stringify({aba:"test"}),
+        body: JSON.stringify(req),
       });
     },
     onStompError: (frame) => {

@@ -42,7 +42,7 @@ public class RoomController {
         return room;
     }
 
-    @PostMapping("join-room/{id}")
+    @PostMapping("/join-room/{id}")
     public Room joinRoom(@RequestBody Player player, @PathVariable String id){
 
         Room room = Storage.getRoomById(id);
@@ -54,11 +54,12 @@ public class RoomController {
         room.add(player);
 
         log.info("Player {} joined room {}", player, id);
-        messagingTemplate.convertAndSend("/topic/rooms/" + id, room);
+        messagingTemplate.convertAndSend("/topic/room/" + id, room);
+        messagingTemplate.convertAndSend("/topic/rooms/all-rooms", Storage.rooms);
         return room;
     }
 
-    @MessageMapping("rooms/{id}")
+    @MessageMapping("/room/{id}")
         public Room roomControl(@Payload RoomRequest roomReq) {
         if (roomReq.action() == RoomStates.START){
             var room = roomReq.room();
@@ -71,15 +72,10 @@ public class RoomController {
         return roomReq.room();
     }
 
-    class testReq{
-        String aba;
-    }
-
-    @MessageMapping("rooms")
-    @SendTo("topic/rooms/all-rooms")
-    public ArrayList<Room> allRooms(@Payload testReq test){
-        System.out.println("called " + test.aba);
-        messagingTemplate.convertAndSend("/topic/rooms/all-rooms", Storage.rooms);
+    @MessageMapping("/rooms")
+    public ArrayList<Room> allRooms(@Payload RoomRequest request){
+        System.out.println("called " + request.action());
+        messagingTemplate.convertAndSend("/topic/rooms", Storage.rooms);
         return Storage.rooms;
     }
 

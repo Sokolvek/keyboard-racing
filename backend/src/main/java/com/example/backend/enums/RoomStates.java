@@ -4,5 +4,6 @@ public enum RoomStates {
     CREATE,
     DELETE,
     START,
+    GET,
     JOIN
 }

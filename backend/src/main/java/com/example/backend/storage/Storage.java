@@ -1,11 +1,15 @@
 package com.example.backend.storage;
 
+import com.example.backend.models.Player;
 import com.example.backend.models.Room;
 
 import java.util.ArrayList;
 
 public class Storage {
     public static final ArrayList<Room> rooms = new ArrayList<>();
+    public static final ArrayList<Player> players = new ArrayList<>();
+
+
 
     public static int roomId = 1;
 
